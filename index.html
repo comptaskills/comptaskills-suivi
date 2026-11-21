@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ComptaSkills – Suivi projet</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<style>
+  :root {
+    --fuchsia: #cf54b4;
+    --violet: #6b02b6;
+    --creme: #fffcf0;
+    --creme-dark: #f5f0e0;
+    --text: #2a1a3e;
+    --text-light: #6b5a85;
+    --urgent: #e53e3e;
+    --moyen: #dd6b20;
+    --faible: #38a169;
+    --shadow: 0 2px 12px rgba(107,2,182,0.08);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--creme);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ── Bandeau ── */
+  .topbar {
+    background: white;
+    border-bottom: 1px solid var(--creme-dark);
+    padding: 14px 24px 12px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 10px rgba(107,2,182,0.06);
+  }
+  .topbar-row1 {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 10px;
+  }
+  .topbar-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.2rem; font-weight: 800;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .topbar-title .cs {
+    background: linear-gradient(135deg, var(--violet), var(--fuchsia));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .topbar-title .sep { color: #ccc; }
+  .topbar-title .sub { color: var(--text-light); font-weight: 700; font-size: 1rem; }
+  .topbar-counters {
+    display: flex; gap: 18px; font-size: 0.82rem; color: var(--text-light); align-items: center;
+  }
+  .topbar-counters strong { font-weight: 700; }
+  .c-done strong { color: var(--faible); }
+  .c-left strong { color: var(--fuchsia); }
+  .topbar-progress { display: flex; gap: 16px; flex-wrap: wrap; }
+  .gp-item {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.74rem; min-width: 150px; flex: 1;
+  }
+  .gp-emoji { font-size: 0.9rem; }
+  .gp-label { font-weight: 600; white-space: nowrap; color: var(--text); font-size: 0.75rem; }
+  .gp-bar { flex: 1; height: 5px; background: var(--creme-dark); border-radius: 10px; overflow: hidden; min-width: 50px; }
+  .gp-fill { height: 100%; background: linear-gradient(90deg, var(--violet), var(--fuchsia)); border-radius: 10px; transition: width 0.4s ease; }
+  .gp-pct { font-size: 0.68rem; white-space: nowrap; color: var(--text-light); }
+
+  /* ── Main ── */
+  .main-content { padding: 24px 16px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px; max-width: 1600px; margin: 0 auto;
+  }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+
+  /* ── Card ── */
+  .card {
+    background: white; border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;
+  }
+  .card-header {
+    padding: 16px 20px 12px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--creme-dark);
+  }
+  .card-header .emoji { font-size: 1.3rem; }
+  .card-header h2 {
+    font-family: 'Nunito', sans-serif; font-size: 1.05rem; font-weight: 800;
+    color: var(--violet); flex: 1; cursor: pointer;
+  }
+  .card-header h2:hover { text-decoration: underline dotted; }
+  .card-counter {
+    font-size: 0.72rem; color: var(--text-light); white-space: nowrap;
+    background: var(--creme-dark); padding: 2px 8px; border-radius: 20px; font-weight: 600;
+  }
+  .progress-wrap { padding: 8px 20px 0; display: flex; align-items: center; gap: 8px; }
+  .progress-bar { flex: 1; height: 5px; background: var(--creme-dark); border-radius: 10px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--violet), var(--fuchsia)); border-radius: 10px; transition: width 0.4s ease; }
+  .progress-label { font-size: 0.7rem; font-weight: 600; color: var(--text-light); white-space: nowrap; }
+
+  /* ── Module ── */
+  .module-block { border-top: 2px solid var(--creme-dark); }
+  .module-title {
+    font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--violet); padding: 10px 20px 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .module-toggle {
+    font-size: 0.65rem; color: var(--text-light); margin-left: auto;
+    cursor: pointer; user-select: none; padding: 2px 6px;
+    border: 1px solid var(--creme-dark); border-radius: 4px;
+  }
+  .module-toggle:hover { background: var(--creme-dark); }
+
+  /* ── Section sous-module ── */
+  .section { padding: 6px 20px 4px 32px; border-top: 1px solid #f3eeff; }
+  .section-title {
+    font-family: 'Nunito', sans-serif; font-size: 0.75rem; font-weight: 700;
+    color: var(--fuchsia); margin-bottom: 4px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .section-title .sec-toggle {
+    font-size: 0.6rem; color: var(--text-light); margin-left: auto;
+    cursor: pointer; user-select: none;
+  }
+
+  /* ── Section simple ── */
+  .section-simple { padding: 10px 20px 4px; border-top: 1px solid var(--creme-dark); }
+  .section-simple-title {
+    font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--fuchsia); margin-bottom: 6px; cursor: pointer;
+  }
+  .section-simple-title:hover { text-decoration: underline dotted; }
+
+  /* ── Task row ── */
+  .task-list { list-style: none; }
+  .task-item {
+    display: flex; align-items: flex-start; gap: 6px;
+    padding: 5px 0; border-bottom: 1px solid #f8f4ff;
+    cursor: default;
+  }
+  .task-item:last-child { border-bottom: none; }
+  .task-item.sortable-ghost { opacity: 0.35; background: #f3eeff; border-radius: 6px; }
+  .task-item.sortable-drag { box-shadow: 0 4px 16px rgba(107,2,182,0.18); background: white; border-radius: 6px; }
+
+  /* ── Handle drag ── */
+  .drag-handle {
+    flex-shrink: 0; margin-top: 3px;
+    color: #d0c0e8; cursor: grab; font-size: 0.9rem; line-height: 1;
+    padding: 1px 2px; opacity: 0; transition: opacity 0.15s;
+    user-select: none;
+  }
+  .task-item:hover .drag-handle { opacity: 1; }
+  .drag-handle:active { cursor: grabbing; color: var(--violet); }
+
+  .task-cb {
+    appearance: none; -webkit-appearance: none;
+    width: 16px; height: 16px; border: 2px solid #d8c8f0; border-radius: 4px;
+    cursor: pointer; flex-shrink: 0; margin-top: 2px;
+    transition: all 0.2s; background: white; position: relative;
+  }
+  .task-cb:checked { background: linear-gradient(135deg, var(--violet), var(--fuchsia)); border-color: var(--violet); }
+  .task-cb:checked::after {
+    content: '✓'; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); color: white; font-size: 10px; font-weight: 700;
+  }
+
+  .task-text {
+    flex: 1; font-size: 0.84rem; line-height: 1.4; cursor: pointer;
+    padding: 1px 4px; border-radius: 4px; transition: background 0.15s; word-break: break-word;
+  }
+  .task-text:hover { background: var(--creme-dark); }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--text-light); opacity: 0.6; }
+
+  /* ── Priorité badge ── */
+  .prio-badge {
+    flex-shrink: 0; margin-top: 2px;
+    font-size: 0.6rem; font-weight: 700;
+    padding: 2px 7px; border-radius: 20px;
+    cursor: pointer; border: 1.5px solid;
+    white-space: nowrap; transition: all 0.15s; user-select: none;
+  }
+  .prio-badge.none { color: #ccc; border-color: #e8e8e8; background: transparent; }
+  .prio-badge.none:hover { border-color: #bbb; color: #bbb; }
+  .prio-badge.U { color: var(--urgent); border-color: var(--urgent); background: #fff5f5; }
+  .prio-badge.M { color: var(--moyen); border-color: var(--moyen); background: #fffaf0; }
+  .prio-badge.F { color: var(--faible); border-color: var(--faible); background: #f0fff4; }
+
+  .del-btn {
+    background: none; border: none; cursor: pointer;
+    color: #ddd; font-size: 0.95rem; line-height: 1;
+    padding: 0 2px; flex-shrink: 0; margin-top: 2px; transition: color 0.15s;
+  }
+  .del-btn:hover { color: var(--urgent); }
+
+  /* ── Add task ── */
+  .add-row { display: flex; gap: 8px; padding: 10px 20px 14px; align-items: center; }
+  .add-input {
+    flex: 1; border: 1.5px solid #e0d4f7; border-radius: 8px;
+    padding: 6px 11px; font-size: 0.82rem; font-family: 'Inter', sans-serif;
+    background: var(--creme); color: var(--text); outline: none; transition: border 0.2s;
+  }
+  .add-input:focus { border-color: var(--violet); background: white; }
+  .add-btn {
+    background: linear-gradient(135deg, var(--violet), var(--fuchsia));
+    color: white; border: none; border-radius: 8px; padding: 6px 13px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer;
+    white-space: nowrap; transition: opacity 0.15s;
+  }
+  .add-btn:hover { opacity: 0.85; }
+
+  /* ── Save bar ── */
+  .save-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    padding: 12px 24px;
+    background: rgba(255,252,240,0.95); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--creme-dark); z-index: 200;
+  }
+  .save-btn {
+    background: linear-gradient(135deg, var(--violet), var(--fuchsia));
+    color: white; border: none; border-radius: 30px; padding: 10px 30px;
+    font-size: 0.92rem; font-weight: 700; font-family: 'Nunito', sans-serif;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(207,84,180,0.3);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(207,84,180,0.4); }
+  .cancel-btn {
+    background: white; color: var(--text-light);
+    border: 1.5px solid #e0d4f7; border-radius: 30px; padding: 10px 26px;
+    font-size: 0.92rem; font-weight: 600; font-family: 'Nunito', sans-serif;
+    cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  }
+  .cancel-btn:hover { border-color: var(--violet); color: var(--violet); }
+  .undo-count {
+    font-size: 0.75rem; color: var(--text-light); font-weight: 600;
+  }
+  .save-toast { font-size: 0.8rem; font-weight: 600; opacity: 0; transition: opacity 0.3s; white-space: nowrap; }
+  .save-toast.show { opacity: 1; }
+
+  .editing-inline { outline: 2px solid var(--fuchsia); border-radius: 4px; background: white !important; cursor: text; }
+
+  @media (max-width: 600px) {
+    .topbar-counters { gap: 10px; font-size: 0.75rem; }
+    .topbar-progress { gap: 8px; }
+    .gp-item { min-width: 110px; }
+  }
+  @media (max-width: 420px) { .topbar-counters { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-row1">
+    <div class="topbar-title">
+      <span class="cs">ComptaSkills</span>
+      <span class="sep">·</span>
+      <span class="sub">Suivi projet</span>
+    </div>
+    <div class="topbar-counters">
+      <span class="c-done"><strong id="cnt-done">0</strong> faites</span>
+      <span class="c-left"><strong id="cnt-left">0</strong> restantes</span>
+      <span class="c-total"><strong id="cnt-total">0</strong> au total</span>
+    </div>
+  </div>
+  <div class="topbar-progress" id="global-progress"></div>
+</div>
+
+<div class="main-content">
+  <div class="grid" id="board"></div>
+</div>
+
+<div class="save-bar">
+  <button class="save-btn" onclick="saveAll()">💾 Sauvegarder</button>
+  <button class="cancel-btn" onclick="undoAction()">↩ Annuler</button>
+  <span class="undo-count" id="undo-count"></span>
+  <span class="save-toast" id="toast"></span>
+</div>
+
+<script>
+// ── PRIO CYCLE ──────────────────────────────────────────────────
+const PRIO_CYCLE = [null, 'U', 'M', 'F'];
+const PRIO_LABELS = { U: 'Urgent', M: 'Moyen', F: 'Faible' };
+function nextPrio(current) {
+  const idx = PRIO_CYCLE.indexOf(current);
+  return PRIO_CYCLE[(idx + 1) % PRIO_CYCLE.length];
+}
+
+// ── HISTORIQUE ANNULER (10 niveaux) ────────────────────────────
+const UNDO_MAX = 10;
+let undoStack = [];
+
+function pushUndo() {
+  undoStack.push(JSON.stringify(data));
+  if (undoStack.length > UNDO_MAX) undoStack.shift();
+  updateUndoCount();
+}
+
+function undoAction() {
+  if (undoStack.length === 0) {
+    showToast('Rien à annuler', 'var(--text-light)');
+    return;
+  }
+  data = JSON.parse(undoStack.pop());
+  updateUndoCount();
+  render();
+  showToast(`Annulé ↩ (${undoStack.length} restant${undoStack.length > 1 ? 's' : ''})`, 'var(--moyen)');
+}
+
+function updateUndoCount() {
+  const el = document.getElementById('undo-count');
+  el.textContent = undoStack.length > 0 ? `${undoStack.length} action${undoStack.length > 1 ? 's' : ''} annulable${undoStack.length > 1 ? 's' : ''}` : '';
+}
+
+// ── DATA ────────────────────────────────────────────────────────
+const DEFAULT_DATA = [
+  {
+    id: 'ebook', emoji: '📖', title: 'Ebook',
+    sections: [
+      { id: 'eb-contenu', title: 'Contenu & finalisation', tasks: [
+        { id: 't1', text: 'Relecture finale complète de l\'ebook', done: false, prio: 'U' },
+        { id: 't2', text: 'Créer le tableau de suivi de dossiers (bonus)', done: false, prio: 'U' },
+        { id: 't3', text: 'Créer le tableau de suivi des demandes (bonus)', done: false, prio: 'U' },
+        { id: 't4', text: 'Mettre en ligne les deux tableaux et générer les liens', done: false, prio: 'U' },
+        { id: 't5', text: 'Intégrer les liens des tableaux dans l\'ebook', done: false, prio: 'U' },
+        { id: 't6', text: 'Intégrer le lien vers la formation dans l\'ebook', done: false, prio: 'M' },
+      ]},
+      { id: 'eb-vente', title: 'Page de vente & mise en ligne', tasks: [
+        { id: 't7', text: 'Finaliser la page de vente sur Systeme.io', done: false, prio: 'U' },
+        { id: 't8', text: 'Fixer le prix définitif (12 €)', done: false, prio: 'U' },
+        { id: 't9', text: 'Configurer le paiement et la livraison automatique', done: false, prio: 'U' },
+        { id: 't10', text: 'Rédiger l\'email de livraison automatique', done: false, prio: 'U' },
+        { id: 't11', text: 'Tester le tunnel d\'achat complet', done: false, prio: 'U' },
+        { id: 't12', text: 'Vérifier que la page est mobile-friendly', done: false, prio: 'U' },
+        { id: 't13', text: 'Mise en ligne de l\'ebook (fin décembre 2026)', done: false, prio: 'U' },
+      ]},
+      { id: 'eb-relecture', title: 'Test externe', tasks: [
+        { id: 't14', text: 'Faire relire par l\'amie comptable (clarté + timing)', done: false, prio: 'M' },
+        { id: 't15', text: 'Intégrer les retours de la relecture', done: false, prio: 'M' },
+      ]}
+    ]
+  },
+  {
+    id: 'formation', emoji: '🎓', title: 'Formation Passerelle',
+    isFormation: true,
+    modules: [
+      {
+        id: 'fo-m1', title: 'Module 1 – Identifier les différences entreprise / cabinet',
+        subsections: [
+          { id: 'fo-m1-a', title: 'Les différences et similitudes de posture et de rythme', tasks: [
+            { id: 'fm1a1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm1a2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm1a3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm1a4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm1a5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm1a6', text: 'Quiz', done: false, prio: null },
+          ]},
+          { id: 'fo-m1-b', title: 'Se positionner en tant qu\'assistant ou réviseur', tasks: [
+            { id: 'fm1b1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm1b2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm1b3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm1b4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm1b5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm1b6', text: 'Quiz', done: false, prio: null },
+          ]},
+          { id: 'fo-m1-c', title: 'Les tâches selon les lettres de mission', tasks: [
+            { id: 'fm1c1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm1c2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm1c3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm1c4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm1c5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm1c6', text: 'Quiz', done: false, prio: null },
+          ]},
+        ]
+      },
+      {
+        id: 'fo-m2', title: 'Module 2 – Tenir la comptabilité d\'un dossier',
+        subsections: [
+          { id: 'fo-m2-a', title: 'Saisir et contrôler la comptabilité selon la LM', tasks: [
+            { id: 'fm2a1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm2a2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm2a3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm2a4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm2a5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm2a6', text: 'Exercice + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m2-b', title: 'Déclarer la TVA (débits, encaissements, mixte, marge)', tasks: [
+            { id: 'fm2b1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm2b2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm2b3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm2b4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm2b5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm2b6', text: 'Exercice + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m2-c', title: 'Demander les éléments manquants / communication clients', tasks: [
+            { id: 'fm2c1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm2c2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm2c3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm2c4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm2c5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm2c6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+        ]
+      },
+      {
+        id: 'fo-m3', title: 'Module 3 – Préparer le dossier pour la révision',
+        subsections: [
+          { id: 'fo-m3-a', title: 'Les éléments à demander pour le bilan', tasks: [
+            { id: 'fm3a1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm3a2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm3a3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm3a4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm3a5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm3a6', text: 'Exercice + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m3-b', title: 'Les écritures d\'inventaire', tasks: [
+            { id: 'fm3b1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm3b2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm3b3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm3b4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm3b5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm3b6', text: 'Exercice + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m3-c', title: 'Contrôle TVA et régularisation de bilan', tasks: [
+            { id: 'fm3c1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm3c2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm3c3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm3c4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm3c5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm3c6', text: 'Exercice + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m3-d', title: 'La note de synthèse', tasks: [
+            { id: 'fm3d1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm3d2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm3d3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm3d4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm3d5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm3d6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+        ]
+      },
+      {
+        id: 'fo-m4', title: 'Module 4 – Appréhender plusieurs types de dossiers',
+        subsections: [
+          { id: 'fo-m4-0', title: 'Lire et remplir une liasse fiscale (généralités)', tasks: [
+            { id: 'fm4z1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm4z2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm4z3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm4z4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm4z5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm4z6', text: 'Quiz', done: false, prio: null },
+          ]},
+          { id: 'fo-m4-a', title: 'SCI à l\'IR', tasks: [
+            { id: 'fm4a1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm4a2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm4a3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm4a4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm4a5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm4a6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m4-b', title: 'SCI à l\'IS', tasks: [
+            { id: 'fm4b1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm4b2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm4b3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm4b4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm4b5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm4b6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m4-c', title: 'LMNP', tasks: [
+            { id: 'fm4c1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm4c2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm4c3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm4c4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm4c5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm4c6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m4-d', title: 'BIC à l\'IR', tasks: [
+            { id: 'fm4d1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm4d2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm4d3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm4d4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm4d5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm4d6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m4-e', title: 'BIC à l\'IS', tasks: [
+            { id: 'fm4e1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm4e2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm4e3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm4e4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm4e5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm4e6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+          { id: 'fo-m4-f', title: 'BNC', tasks: [
+            { id: 'fm4f1', text: 'Support de formation', done: false, prio: null },
+            { id: 'fm4f2', text: 'Mise en page sur le site', done: false, prio: null },
+            { id: 'fm4f3', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fm4f4', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fm4f5', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+            { id: 'fm4f6', text: 'Cas pratique + corrigé', done: false, prio: null },
+          ]},
+        ]
+      },
+      {
+        id: 'fo-bonus', title: 'Module 5 Bonus',
+        subsections: [
+          { id: 'fo-b1', title: 'Facturation électronique', tasks: [
+            { id: 'fb11', text: 'Support de formation', done: false, prio: null },
+            { id: 'fb12', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fb13', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fb14', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+          ]},
+          { id: 'fo-b2', title: 'IA en cabinet', tasks: [
+            { id: 'fb21', text: 'Support de formation', done: false, prio: null },
+            { id: 'fb22', text: 'Tournage vidéo', done: false, prio: null },
+            { id: 'fb23', text: 'Mise en ligne vidéo', done: false, prio: null },
+            { id: 'fb24', text: 'Mise en ligne ressources (support / résumé)', done: false, prio: null },
+          ]},
+        ]
+      },
+      {
+        id: 'fo-plateforme', title: 'Plateforme & lancement',
+        subsections: [
+          { id: 'fo-plat', title: 'Configuration & mise en ligne', tasks: [
+            { id: 'fpl1', text: 'Paramétrer la formation sur Systeme.io', done: false, prio: 'M' },
+            { id: 'fpl2', text: 'Configurer le format autonomie (397 €)', done: false, prio: 'M' },
+            { id: 'fpl3', text: 'Configurer le format accompagnement (697 €)', done: false, prio: 'M' },
+            { id: 'fpl4', text: 'Créer et activer l\'espace communauté', done: false, prio: 'M' },
+            { id: 'fpl5', text: 'Créer la page liste d\'attente', done: false, prio: 'M' },
+            { id: 'fpl6', text: 'Rédiger l\'email de bienvenue liste d\'attente', done: false, prio: 'M' },
+            { id: 'fpl7', text: 'Mise en ligne formation (fin jan / début fév 2027)', done: false, prio: 'F' },
+          ]},
+        ]
+      },
+    ]
+  },
+  {
+    id: 'instagram', emoji: '📱', title: 'Instagram & contenu',
+    sections: [
+      { id: 'ig-setup', title: 'Compte & identité visuelle', tasks: [
+        { id: 't60', text: 'Bio mise en ligne (@compta_skills)', done: true, prio: null },
+        { id: 't61', text: 'Modifier "Croyez" en "Crois" dans le logo', done: false, prio: 'M' },
+        { id: 't62', text: 'Créer les gabarits Canva (couleurs ComptaSkills)', done: false, prio: 'U' },
+        { id: 't63', text: 'Créer les 9 premières publications (grille de lancement)', done: false, prio: 'U' },
+        { id: 't64', text: 'Mettre le lien ebook dans la bio (au lancement)', done: false, prio: 'U' },
+      ]},
+      { id: 'ig-contenu', title: 'Stratégie & contenu', tasks: [
+        { id: 't65', text: 'Définir la ligne éditoriale (gratuit vs contenu ebook)', done: false, prio: 'U' },
+        { id: 't66', text: 'Préparer le planning publication (3h/semaine)', done: false, prio: 'U' },
+        { id: 't67', text: 'Brainstormer 15 idées de posts (vécu + thèmes ebook)', done: false, prio: 'U' },
+        { id: 't68', text: 'Préparer 2-3 Reels voix off pour le lancement', done: false, prio: 'M' },
+        { id: 't69', text: 'Analyser des comptes formation comptable qui marchent', done: false, prio: 'M' },
+      ]},
+      { id: 'ig-lancement', title: 'Lancement & suivi', tasks: [
+        { id: 't70', text: 'Commencer à interagir avec des comptes similaires', done: false, prio: 'M' },
+        { id: 't71', text: 'Premier post de lancement de l\'ebook', done: false, prio: 'U' },
+        { id: 't72', text: 'Partager le lien liste d\'attente formation sur Instagram', done: false, prio: 'M' },
+        { id: 't73', text: 'Point stats à J+30 et réajustement de la stratégie', done: false, prio: 'F' },
+      ]}
+    ]
+  },
+  {
+    id: 'marketing', emoji: '📣', title: 'Marketing & lancement',
+    sections: [
+      { id: 'mk-email', title: 'Email marketing', tasks: [
+        { id: 't80', text: 'Prévoir un lead magnet gratuit pour collecter des emails', done: false, prio: 'M' },
+        { id: 't81', text: 'Préparer 1-2 emails de suivi post-achat ebook', done: false, prio: 'M' },
+        { id: 't82', text: 'Préparer la séquence email de lancement formation (fév 2027)', done: false, prio: 'F' },
+      ]},
+      { id: 'mk-positionnement', title: 'Positionnement & messaging', tasks: [
+        { id: 't83', text: 'Formuler la légitimité formatrice (sans se sur/sous-vendre)', done: false, prio: 'U' },
+        { id: 't84', text: 'Préciser que la formation est une passerelle, pas de la compta avancée', done: false, prio: 'M' },
+        { id: 't85', text: 'Préparer les réponses aux freins identifiés chez la cible', done: false, prio: 'M' },
+        { id: 't86', text: 'Objectif premier lancement formation : 4 ventes', done: false, prio: 'F' },
+      ]}
+    ]
+  }
+];
+
+// ── Storage ─────────────────────────────────────────────────────
+const STORAGE_KEY = 'comptaskills_board_v3';
+let data = [];
+
+function allTasks(card) {
+  if (card.isFormation) return card.modules.flatMap(m => m.subsections.flatMap(s => s.tasks));
+  return card.sections.flatMap(s => s.tasks);
+}
+
+function loadData() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) { data = JSON.parse(stored); return; }
+  } catch(e) {}
+  data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+
+function saveAll() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    undoStack = [];
+    updateUndoCount();
+  } catch(e) {}
+  showToast('Sauvegardé ✓', 'var(--faible)');
+}
+
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.color = color;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Progress ────────────────────────────────────────────────────
+function getProgress(card) {
+  const tasks = allTasks(card);
+  const total = tasks.length;
+  const done = tasks.filter(t => t.done).length;
+  return { pct: total === 0 ? 0 : Math.round((done / total) * 100), done, total };
+}
+
+function updateGlobalCounters() {
+  let totalDone = 0, totalAll = 0;
+  data.forEach(card => {
+    const tasks = allTasks(card);
+    totalAll += tasks.length;
+    totalDone += tasks.filter(t => t.done).length;
+  });
+  document.getElementById('cnt-done').textContent = totalDone;
+  document.getElementById('cnt-left').textContent = totalAll - totalDone;
+  document.getElementById('cnt-total').textContent = totalAll;
+
+  const gp = document.getElementById('global-progress');
+  gp.innerHTML = '';
+  data.forEach(card => {
+    const { pct, done, total } = getProgress(card);
+    const item = document.createElement('div');
+    item.className = 'gp-item';
+    item.innerHTML = `<span class="gp-emoji">${card.emoji}</span><span class="gp-label">${card.title}</span><div class="gp-bar"><div class="gp-fill" id="gpf-${card.id}" style="width:${pct}%"></div></div><span class="gp-pct" id="gpl-${card.id}">${done}/${total} · ${pct}%</span>`;
+    gp.appendChild(item);
+  });
+}
+
+function updateCardProgress(card) {
+  const { pct, done, total } = getProgress(card);
+  const els = {
+    fill: document.getElementById(`pf-${card.id}`),
+    label: document.getElementById(`pl-${card.id}`),
+    counter: document.getElementById(`cc-${card.id}`),
+    gpFill: document.getElementById(`gpf-${card.id}`),
+    gpLabel: document.getElementById(`gpl-${card.id}`),
+  };
+  if (els.fill) els.fill.style.width = pct + '%';
+  if (els.label) els.label.textContent = pct + '%';
+  if (els.counter) els.counter.textContent = `${done}/${total}`;
+  if (els.gpFill) els.gpFill.style.width = pct + '%';
+  if (els.gpLabel) els.gpLabel.textContent = `${done}/${total} · ${pct}%`;
+}
+
+// ── SortableJS – initialiser le drag & drop sur une liste ──────
+// Registre global : listEl → { tasksArray, card }
+const listRegistry = new Map();
+
+function initSortable(listEl, tasksArray, card) {
+  listRegistry.set(listEl, { tasksArray, card });
+  Sortable.create(listEl, {
+    group: 'comptaskills',
+    handle: '.drag-handle',
+    animation: 150,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    onStart() {
+      pushUndo();
+    },
+    onEnd(evt) {
+      const fromEl = evt.from;
+      const toEl   = evt.to;
+      const fromReg = listRegistry.get(fromEl);
+      const toReg   = listRegistry.get(toEl);
+      if (!fromReg || !toReg) return;
+
+      // Supprimer de la liste source
+      const moved = fromReg.tasksArray.splice(evt.oldIndex, 1)[0];
+      // Insérer dans la liste destination
+      toReg.tasksArray.splice(evt.newIndex, 0, moved);
+
+      updateCardProgress(fromReg.card);
+      if (toReg.card !== fromReg.card) updateCardProgress(toReg.card);
+      updateGlobalCounters();
+    }
+  });
+}
+
+// ── Render ──────────────────────────────────────────────────────
+function render() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  data.forEach(card => board.appendChild(renderCard(card)));
+  updateGlobalCounters();
+}
+
+function renderCard(card) {
+  const el = document.createElement('div');
+  el.className = 'card'; el.dataset.cardId = card.id;
+
+  const hdr = document.createElement('div');
+  hdr.className = 'card-header';
+  const emojiEl = document.createElement('span');
+  emojiEl.className = 'emoji'; emojiEl.textContent = card.emoji;
+  const h2 = document.createElement('h2');
+  h2.textContent = card.title;
+  enableEdit(h2, () => { card.title = h2.textContent; updateGlobalCounters(); });
+  const { pct, done, total } = getProgress(card);
+  const counter = document.createElement('span');
+  counter.className = 'card-counter'; counter.id = `cc-${card.id}`;
+  counter.textContent = `${done}/${total}`;
+  hdr.append(emojiEl, h2, counter);
+  el.appendChild(hdr);
+
+  const pw = document.createElement('div');
+  pw.className = 'progress-wrap';
+  pw.innerHTML = `<div class="progress-bar"><div class="progress-fill" id="pf-${card.id}" style="width:${pct}%"></div></div><span class="progress-label" id="pl-${card.id}">${pct}%</span>`;
+  el.appendChild(pw);
+
+  if (card.isFormation) {
+    card.modules.forEach(mod => el.appendChild(renderModule(card, mod)));
+  } else {
+    card.sections.forEach(sec => el.appendChild(renderSectionSimple(card, sec)));
+  }
+
+  const addRow = document.createElement('div');
+  addRow.className = 'add-row';
+  const input = document.createElement('input');
+  input.type = 'text'; input.className = 'add-input'; input.placeholder = 'Ajouter une tâche…';
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-btn'; addBtn.textContent = '+ Ajouter';
+  const doAdd = () => {
+    const txt = input.value.trim(); if (!txt) return;
+    pushUndo();
+    const newTask = { id: 't' + Date.now(), text: txt, done: false, prio: null };
+    if (card.isFormation) {
+      const lastMod = card.modules[card.modules.length - 1];
+      const lastSub = lastMod.subsections[lastMod.subsections.length - 1];
+      lastSub.tasks.push(newTask);
+    } else {
+      card.sections[card.sections.length - 1].tasks.push(newTask);
+    }
+    input.value = '';
+    const board = document.getElementById('board');
+    const oldEl = board.querySelector(`[data-card-id="${card.id}"]`);
+    if (oldEl) board.replaceChild(renderCard(card), oldEl);
+    updateGlobalCounters();
+  };
+  addBtn.onclick = doAdd;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  addRow.append(input, addBtn);
+  el.appendChild(addRow);
+  return el;
+}
+
+function renderModule(card, mod) {
+  const el = document.createElement('div');
+  el.className = 'module-block'; el.dataset.modId = mod.id;
+
+  const titleRow = document.createElement('div');
+  titleRow.className = 'module-title';
+  const titleSpan = document.createElement('span');
+  titleSpan.textContent = mod.title;
+  enableEdit(titleSpan, () => { mod.title = titleSpan.textContent; });
+  const toggle = document.createElement('span');
+  toggle.className = 'module-toggle'; toggle.textContent = '▼ réduire';
+
+  let collapsed = false;
+  const subsContainer = document.createElement('div');
+  mod.subsections.forEach(sub => subsContainer.appendChild(renderSubsection(card, mod, sub)));
+
+  toggle.onclick = () => {
+    collapsed = !collapsed;
+    subsContainer.style.display = collapsed ? 'none' : '';
+    toggle.textContent = collapsed ? '▶ développer' : '▼ réduire';
+  };
+  titleRow.append(titleSpan, toggle);
+  el.append(titleRow, subsContainer);
+  return el;
+}
+
+function renderSubsection(card, mod, sub) {
+  const el = document.createElement('div');
+  el.className = 'section'; el.dataset.subId = sub.id;
+
+  const titleRow = document.createElement('div');
+  titleRow.className = 'section-title';
+  const titleSpan = document.createElement('span');
+  titleSpan.textContent = sub.title;
+  enableEdit(titleSpan, () => { sub.title = titleSpan.textContent; });
+  const toggle = document.createElement('span');
+  toggle.className = 'sec-toggle'; toggle.textContent = '▼';
+  let collapsed = false;
+  const list = document.createElement('ul');
+  list.className = 'task-list';
+  sub.tasks.forEach(t => list.appendChild(renderTask(card, t)));
+  initSortable(list, sub.tasks, card);
+
+  toggle.onclick = () => {
+    collapsed = !collapsed;
+    list.style.display = collapsed ? 'none' : '';
+    toggle.textContent = collapsed ? '▶' : '▼';
+  };
+  titleRow.append(titleSpan, toggle);
+  el.append(titleRow, list);
+  return el;
+}
+
+function renderSectionSimple(card, sec) {
+  const el = document.createElement('div');
+  el.className = 'section-simple'; el.dataset.secId = sec.id;
+  const title = document.createElement('div');
+  title.className = 'section-simple-title'; title.textContent = sec.title;
+  enableEdit(title, () => { sec.title = title.textContent; });
+  const list = document.createElement('ul');
+  list.className = 'task-list';
+  sec.tasks.forEach(t => list.appendChild(renderTask(card, t)));
+  initSortable(list, sec.tasks, card);
+  el.append(title, list);
+  return el;
+}
+
+function renderTask(card, task) {
+  const li = document.createElement('li');
+  li.className = 'task-item' + (task.done ? ' done' : '');
+  li.dataset.taskId = task.id;
+
+  // Handle drag (remplace les flèches ↑↓)
+  const handle = document.createElement('span');
+  handle.className = 'drag-handle';
+  handle.textContent = '⠿';
+  handle.title = 'Glisser pour déplacer';
+
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.className = 'task-cb'; cb.checked = task.done;
+  cb.addEventListener('change', () => {
+    task.done = cb.checked;
+    li.classList.toggle('done', task.done);
+    updateCardProgress(card); updateGlobalCounters();
+  });
+
+  const txt = document.createElement('span');
+  txt.className = 'task-text'; txt.textContent = task.text;
+  enableEdit(txt, () => { task.text = txt.textContent; });
+
+  const badge = document.createElement('span');
+  badge.className = `prio-badge ${task.prio || 'none'}`;
+  badge.textContent = task.prio ? PRIO_LABELS[task.prio] : '···';
+  badge.title = 'Cliquer pour changer la priorité';
+  badge.onclick = () => {
+    task.prio = nextPrio(task.prio);
+    badge.className = `prio-badge ${task.prio || 'none'}`;
+    badge.textContent = task.prio ? PRIO_LABELS[task.prio] : '···';
+  };
+
+  const del = document.createElement('button');
+  del.className = 'del-btn'; del.textContent = '×'; del.title = 'Supprimer';
+  del.onclick = () => {
+    pushUndo();
+    if (card.isFormation) {
+      for (const mod of card.modules)
+        for (const sub of mod.subsections)
+          sub.tasks = sub.tasks.filter(t => t.id !== task.id);
+    } else {
+      card.sections.forEach(s => { s.tasks = s.tasks.filter(t => t.id !== task.id); });
+    }
+    li.remove();
+    updateCardProgress(card); updateGlobalCounters();
+  };
+
+  li.append(handle, cb, txt, badge, del);
+  return li;
+}
+
+// ── Double-click edit ───────────────────────────────────────────
+function enableEdit(el, onChange) {
+  el.addEventListener('dblclick', () => {
+    if (el.contentEditable === 'true') return;
+    el.contentEditable = 'true'; el.classList.add('editing-inline');
+    el.focus();
+    const r = document.createRange(); r.selectNodeContents(el);
+    window.getSelection().removeAllRanges(); window.getSelection().addRange(r);
+    const done = () => { el.contentEditable = 'false'; el.classList.remove('editing-inline'); if (onChange) onChange(); };
+    el.addEventListener('blur', done, { once: true });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } if (e.key === 'Escape') el.blur(); }, { once: true });
+  });
+}
+
+// ── Init ────────────────────────────────────────────────────────
+loadData();
+render();
+</script>
+</body>
+</html>
