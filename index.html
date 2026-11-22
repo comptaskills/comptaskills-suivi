@@ -335,7 +335,7 @@ function updateUndoCount() {
 // ── DATA ────────────────────────────────────────────────────────
 const DEFAULT_DATA = [
   {
-    id: 'ebook', emoji: '📖', title: 'Ebook',
+    id: 'ebook', col: 0, emoji: '📖', title: 'Ebook',
     sections: [
       { id: 'eb-contenu', title: 'Contenu & finalisation', tasks: [
         { id: 't1', text: 'Relecture finale complète de l\'ebook', done: false, prio: 'U' },
@@ -361,7 +361,7 @@ const DEFAULT_DATA = [
     ]
   },
   {
-    id: 'technique-legal', emoji: '⚙️', title: 'Technique & Légal',
+    id: 'technique-legal', col: 0, emoji: '⚙️', title: 'Technique & Légal',
     sections: [
       { id: 'tl-systeme-formulaires', title: '🛒 Systeme.io — Formulaires de commande', tasks: [
         { id: 'tl1', text: 'Remplacer le texte de consentement par une vraie case à cocher (termsConsent) sur les 3 formulaires, dès que l\'URL des CGV est connue', done: false, prio: 'U' },
@@ -391,7 +391,7 @@ const DEFAULT_DATA = [
     ]
   },
   {
-    id: 'formation', emoji: '🎓', title: 'Formation Passerelle',
+    id: 'formation', col: 1, emoji: '🎓', title: 'Formation Passerelle',
     isFormation: true,
     modules: [
       {
@@ -584,7 +584,7 @@ const DEFAULT_DATA = [
     ]
   },
   {
-    id: 'instagram', emoji: '📱', title: 'Instagram & contenu',
+    id: 'instagram', col: 2, emoji: '📱', title: 'Instagram & contenu',
     sections: [
       { id: 'ig-setup', title: 'Compte & identité visuelle', tasks: [
         { id: 't60', text: 'Bio mise en ligne (@compta_skills)', done: true, prio: null },
@@ -609,7 +609,7 @@ const DEFAULT_DATA = [
     ]
   },
   {
-    id: 'marketing', emoji: '📣', title: 'Marketing & lancement',
+    id: 'marketing', col: 3, emoji: '📣', title: 'Marketing & lancement',
     sections: [
       { id: 'mk-email', title: 'Email marketing', tasks: [
         { id: 't80', text: 'Prévoir un lead magnet gratuit pour collecter des emails', done: false, prio: 'M' },
@@ -801,11 +801,14 @@ function initSortable(listEl, tasksArray, card) {
 function render() {
   const board = document.getElementById('board');
   board.innerHTML = '';
-  // Colonnes fixes : on répartit les cartes par col selon leur id
-  const colMap = { 'ebook': 0, 'technique-legal': 0, 'formation': 1, 'instagram': 2, 'marketing': 3 };
-  const cols = [0, 1, 2, 3].map(() => { const d = document.createElement('div'); d.className = 'grid-col'; return d; });
+  const NUM_COLS = 4;
+  const cols = Array.from({ length: NUM_COLS }, () => {
+    const d = document.createElement('div');
+    d.className = 'grid-col';
+    return d;
+  });
   data.forEach(card => {
-    const colIdx = colMap[card.id] !== undefined ? colMap[card.id] : cols.length - 1;
+    const colIdx = (card.col >= 0 && card.col < NUM_COLS) ? card.col : NUM_COLS - 1;
     cols[colIdx].appendChild(renderCard(card));
   });
   cols.forEach(col => board.appendChild(col));
@@ -859,9 +862,8 @@ function renderCard(card) {
       card.sections[card.sections.length - 1].tasks.push(newTask);
     }
     input.value = '';
-    const board = document.getElementById('board');
-    const oldEl = board.querySelector(`[data-card-id="${card.id}"]`);
-    if (oldEl) board.replaceChild(renderCard(card), oldEl);
+    const oldEl = document.querySelector(`[data-card-id="${card.id}"]`);
+    if (oldEl) oldEl.parentNode.replaceChild(renderCard(card), oldEl);
     updateGlobalCounters();
   };
   addBtn.onclick = doAdd;
