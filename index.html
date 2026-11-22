@@ -352,6 +352,36 @@ const DEFAULT_DATA = [
     ]
   },
   {
+    id: 'technique-legal', emoji: '⚙️', title: 'Technique & Légal',
+    sections: [
+      { id: 'tl-systeme-formulaires', title: '🛒 Systeme.io — Formulaires de commande', tasks: [
+        { id: 'tl1', text: 'Remplacer le texte de consentement par une vraie case à cocher (termsConsent) sur les 3 formulaires, dès que l\'URL des CGV est connue', done: false, prio: 'U' },
+        { id: 'tl2', text: 'Vérifier que les offres sont bien associées aux bons formulaires de commande formation (46961897 et 46961898)', done: false, prio: 'U' },
+      ]},
+      { id: 'tl-systeme-auto', title: '📧 Systeme.io — Automatisations', tasks: [
+        { id: 'tl3', text: 'Mettre en place l\'envoi automatique du contrat de formation par email après achat', done: false, prio: 'U' },
+      ]},
+      { id: 'tl-site', title: '🌐 Site vitrine', tasks: [
+        { id: 'tl4', text: 'Ajouter ta vraie photo dans la section "À propos" (remplacer l\'emoji 👩‍💼)', done: false, prio: 'U' },
+        { id: 'tl5', text: 'Choisir un hébergeur pour le site vitrine', done: false, prio: 'U' },
+        { id: 'tl6', text: 'Mettre à jour les liens légaux (#) vers les vraies URLs une fois l\'hébergeur choisi', done: false, prio: 'M' },
+      ]},
+      { id: 'tl-docs-legaux', title: '📄 Documents légaux', tasks: [
+        { id: 'tl7', text: 'Renseigner le nom de l\'hébergeur dans les Mentions légales', done: false, prio: 'M' },
+        { id: 'tl8', text: 'Désigner un médiateur de la consommation agréé et l\'ajouter dans les CGV (article 10)', done: false, prio: 'U' },
+        { id: 'tl9', text: 'Mettre à jour tous les liens # des CGV / Mentions légales / Politique de confidentialité une fois en ligne', done: false, prio: 'M' },
+      ]},
+      { id: 'tl-liens', title: '🔗 Liens internes à corriger', tasks: [
+        { id: 'tl10', text: 'Remplacer le lien "#" sur le bouton "Découvrir la formation Passerelle" de la page de remerciement ebook → mettre l\'URL réelle de la page de vente formation', done: false, prio: 'U' },
+        { id: 'tl11', text: 'Remplacer les liens "#" des menus footer sur toutes les pages systeme.io → URLs réelles des pages légales', done: false, prio: 'U' },
+      ]},
+      { id: 'tl-legal-perso', title: '⚖️ Légal — À faire toi-même', tasks: [
+        { id: 'tl12', text: 'Choisir et désigner un médiateur de la consommation (obligatoire pour les pros vendant à des particuliers)', done: false, prio: 'U' },
+        { id: 'tl13', text: 'Vérifier avec un juriste ou ton expert-comptable la formulation du contrat de formation si tu veux être 100 % blindée', done: false, prio: 'M' },
+      ]},
+    ]
+  },
+  {
     id: 'formation', emoji: '🎓', title: 'Formation Passerelle',
     isFormation: true,
     modules: [
@@ -584,36 +614,6 @@ const DEFAULT_DATA = [
         { id: 't86', text: 'Objectif premier lancement formation : 4 ventes', done: false, prio: 'F' },
       ]}
     ]
-  },
-  {
-    id: 'technique-legal', emoji: '⚙️', title: 'Technique & Légal',
-    sections: [
-      { id: 'tl-systeme-formulaires', title: '🛒 Systeme.io — Formulaires de commande', tasks: [
-        { id: 'tl1', text: 'Remplacer le texte de consentement par une vraie case à cocher (termsConsent) sur les 3 formulaires, dès que l\'URL des CGV est connue', done: false, prio: 'U' },
-        { id: 'tl2', text: 'Vérifier que les offres sont bien associées aux bons formulaires de commande formation (46961897 et 46961898)', done: false, prio: 'U' },
-      ]},
-      { id: 'tl-systeme-auto', title: '📧 Systeme.io — Automatisations', tasks: [
-        { id: 'tl3', text: 'Mettre en place l\'envoi automatique du contrat de formation par email après achat', done: false, prio: 'U' },
-      ]},
-      { id: 'tl-site', title: '🌐 Site vitrine', tasks: [
-        { id: 'tl4', text: 'Ajouter ta vraie photo dans la section "À propos" (remplacer l\'emoji 👩‍💼)', done: false, prio: 'U' },
-        { id: 'tl5', text: 'Choisir un hébergeur pour le site vitrine', done: false, prio: 'U' },
-        { id: 'tl6', text: 'Mettre à jour les liens légaux (#) vers les vraies URLs une fois l\'hébergeur choisi', done: false, prio: 'M' },
-      ]},
-      { id: 'tl-docs-legaux', title: '📄 Documents légaux', tasks: [
-        { id: 'tl7', text: 'Renseigner le nom de l\'hébergeur dans les Mentions légales', done: false, prio: 'M' },
-        { id: 'tl8', text: 'Désigner un médiateur de la consommation agréé et l\'ajouter dans les CGV (article 10)', done: false, prio: 'U' },
-        { id: 'tl9', text: 'Mettre à jour tous les liens # des CGV / Mentions légales / Politique de confidentialité une fois en ligne', done: false, prio: 'M' },
-      ]},
-      { id: 'tl-liens', title: '🔗 Liens internes à corriger', tasks: [
-        { id: 'tl10', text: 'Remplacer le lien "#" sur le bouton "Découvrir la formation Passerelle" de la page de remerciement ebook → mettre l\'URL réelle de la page de vente formation', done: false, prio: 'U' },
-        { id: 'tl11', text: 'Remplacer les liens "#" des menus footer sur toutes les pages systeme.io → URLs réelles des pages légales', done: false, prio: 'U' },
-      ]},
-      { id: 'tl-legal-perso', title: '⚖️ Légal — À faire toi-même', tasks: [
-        { id: 'tl12', text: 'Choisir et désigner un médiateur de la consommation (obligatoire pour les pros vendant à des particuliers)', done: false, prio: 'U' },
-        { id: 'tl13', text: 'Vérifier avec un juriste ou ton expert-comptable la formulation du contrat de formation si tu veux être 100 % blindée', done: false, prio: 'M' },
-      ]},
-    ]
   }
 ];
 
@@ -677,8 +677,14 @@ function loadData() {
     if (stored) {
       const parsed = JSON.parse(stored);
       const merged = mergeNewTasks(parsed);
+      // Réordonner les cartes selon l'ordre de DEFAULT_DATA
+      const order = DEFAULT_DATA.map(c => c.id);
+      merged.sort((a, b) => {
+        const ia = order.indexOf(a.id), ib = order.indexOf(b.id);
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      });
       data = merged;
-      // Réécrire le localStorage avec les nouvelles tâches fusionnées
+      // Réécrire le localStorage avec les nouvelles tâches fusionnées et réordonnées
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e) {}
       return;
     }
