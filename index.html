@@ -72,16 +72,16 @@
   /* ── Main ── */
   .main-content { padding: 24px 16px; }
   .grid {
-    columns: 4;
-    column-gap: 24px;
-    max-width: 1600px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px; max-width: 1600px; margin: 0 auto;
+    align-items: start;
   }
-  .grid .card {
-    break-inside: avoid;
-    margin-bottom: 24px;
+  .grid .card[data-card-id="technique-legal"] {
+    grid-column: 1;
   }
-  @media (max-width: 1100px) { .grid { columns: 2; } }
-  @media (max-width: 600px) { .grid { columns: 1; } }
+  @media (max-width: 1100px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 
   /* ── Card ── */
   .card {
