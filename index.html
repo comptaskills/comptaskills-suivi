@@ -622,10 +622,40 @@ function allTasks(card) {
   return card.sections.flatMap(s => s.tasks);
 }
 
+function mergeNewTasks(stored) {
+  // Pour chaque carte dans DEFAULT_DATA, vérifier si elle existe dans stored
+  for (const defCard of DEFAULT_DATA) {
+    const storedCard = stored.find(c => c.id === defCard.id);
+    if (!storedCard) {
+      // Carte entièrement nouvelle → l'ajouter
+      stored.push(JSON.parse(JSON.stringify(defCard)));
+      continue;
+    }
+    // Carte existante → fusionner les sections
+    const defSections = defCard.sections || (defCard.modules ? defCard.modules.flatMap(m => m.subsections) : []);
+    const getStoredSections = () => storedCard.sections || (storedCard.modules ? storedCard.modules.flatMap(m => m.subsections) : []);
+    for (const defSection of defSections) {
+      const storedSection = getStoredSections().find(s => s.id === defSection.id);
+      if (!storedSection) continue; // section nouvelle mais dans carte existante : skip (cas rare)
+      for (const defTask of defSection.tasks) {
+        const exists = storedSection.tasks.find(t => t.id === defTask.id);
+        if (!exists) {
+          storedSection.tasks.push(JSON.parse(JSON.stringify(defTask)));
+        }
+      }
+    }
+  }
+  return stored;
+}
+
 function loadData() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) { data = JSON.parse(stored); return; }
+    if (stored) {
+      data = JSON.parse(stored);
+      data = mergeNewTasks(data);
+      return;
+    }
   } catch(e) {}
   data = JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
